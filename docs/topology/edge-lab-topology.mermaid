@@ -1,0 +1,13 @@
+graph TD
+    ONT["Residential ONT Gateway<br/>192.168.7.1/24"]
+    LAPTOP["Admin Workstation (Pop!_OS)<br/>192.168.7.58"]
+    RB["MikroTik RB3011UiAS-RM<br/>WAN: 192.168.7.59 | LAN: 192.168.88.1/24"]
+    CISCO_A["Cisco ISR 4331 Site A<br/>LAN: 192.168.88.2 (DNAT TCP 2222)"]
+    CORTEX["Cortex-01 Bare-Metal (Debian 12)<br/>192.168.7.29"]
+    CF["Cloudflare Zero Trust Tunnel"]
+
+    ONT --> LAPTOP
+    ONT --> RB
+    ONT --> CORTEX
+    RB -->|ether2-ether10 Bridge| CISCO_A
+    CORTEX -->|Zero Open Ports| CF

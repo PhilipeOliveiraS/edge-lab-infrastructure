@@ -1,0 +1,47 @@
+version: '3.8'
+
+networks:
+  factory_default:
+    name: factory_default
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: factory-postgres
+    restart: unless-stopped
+    networks:
+      - factory_default
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-iam_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-iam_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql-init:/docker-entrypoint-initdb.d:ro
+
+  mock-erp:
+    build:
+      context: ./mock-erp
+    container_name: factory-mock-erp
+    restart: unless-stopped
+    networks:
+      - factory_default
+    environment:
+      PORT: 8000
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.39.6
+    container_name: factory-n8n
+    restart: unless-stopped
+    networks:
+      - factory_default
+    environment:
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - WEBHOOK_URL=https://n8n.ph3digital.com.br/
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:

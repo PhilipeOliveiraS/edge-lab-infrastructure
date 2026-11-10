@@ -1,0 +1,24 @@
+# Credentials, secrets and environment variables
+.env
+.env.*
+*.key
+*.pem
+*.pfx
+*.crt
+
+# Backups and raw images
+*.backup
+*.bin
+*.iso
+*.tar.gz
+
+# Serial and console logs
+*.log
+Console-Logs/
+private/
+
+# OS and Editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
