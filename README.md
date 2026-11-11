@@ -92,7 +92,7 @@ This infrastructure provides demonstrable, verifiable evidence across multiple e
 | **Platform Engineering** | Bare-metal Linux host administration (Debian 12 minimal), unified Docker Compose topologies, resource quota containment (`mem_limit`), and container lifecycle automation. | [IAM-HR Platform](https://github.com/PhilipeOliveiraS/iam-hr-offboarding-platform) (Postgres 16, n8n, FastAPI ERP, Browserless RPA). |
 | **NetDevOps & Edge Networking** | RouterOS 7.23.7 long-term automation, VLAN/bridge segmentation, strict stateful firewall input chains, and Cisco IOS-XE 16.6.4 modular edge routing. | Future **OpsCore** physical telemetry aggregator & physical network enforcement. |
 | **Zero Trust & DevSecOps** | Elimination of public perimeter exposure via Cloudflare Zero Trust Tunnels, out-of-band management restrictions (ACLs limiting VTY/SSH strictly to admin host `192.168.7.58`), and cryptographic hygiene. | End-to-end identity revocation and credential quarantine. |
-| **Cloud FinOps & Capacity Planning** | Measuring true cost-of-compute by comparing local bare-metal performance baselines against variable cloud IaaS/PaaS pricing (NAT Gateways, egress traffic, managed container runtimes). | High-efficiency microservice deployments and synthetic workload simulation. |
+| **Cloud FinOps & Capacity Planning** | Measuring true cost-of-compute by comparing local bare-metal performance baselines against variable multi-cloud IaaS/PaaS pricing across AWS, GCP, and OCI (NAT Gateways, egress traffic, managed container runtimes such as ECS, Cloud Run, and OCI Container Instances). | High-efficiency microservice deployments and synthetic workload simulation. |
 
 ---
 
