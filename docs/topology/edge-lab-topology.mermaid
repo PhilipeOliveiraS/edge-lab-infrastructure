@@ -1,13 +1,34 @@
 graph TD
-    ONT["Residential ONT Gateway<br/>192.168.7.1/24"]
-    LAPTOP["Admin Workstation (Pop!_OS)<br/>192.168.7.58"]
-    RB["MikroTik RB3011UiAS-RM<br/>WAN: 192.168.7.59 | LAN: 192.168.88.1/24"]
-    CISCO_A["Cisco ISR 4331 Site A<br/>LAN: 192.168.88.2 (DNAT TCP 2222)"]
-    CORTEX["Cortex-01 Bare-Metal (Debian 12)<br/>192.168.7.29"]
-    CF["Cloudflare Zero Trust Tunnel"]
+    classDef wanStyle fill:#0284C7,stroke:#0369A1,stroke-width:2px,color:#FFFFFF;
+    classDef adminStyle fill:#16A34A,stroke:#15803D,stroke-width:2px,color:#FFFFFF;
+    classDef routingStyle fill:#2563EB,stroke:#1D4ED8,stroke-width:2px,color:#FFFFFF;
+    classDef computeStyle fill:#7C3AED,stroke:#6D28D9,stroke-width:2px,color:#FFFFFF;
+    classDef containerStyle fill:#475569,stroke:#334155,stroke-width:1.5px,color:#FFFFFF;
+    classDef ingressStyle fill:#EA580C,stroke:#C2410C,stroke-width:2px,color:#FFFFFF;
+
+    ONT["Residential ONT Gateway<br/>192.168.7.1/24"]:::wanStyle
+    LAPTOP["Admin Workstation (Pop!_OS)<br/>192.168.7.58"]:::adminStyle
+    RB["MikroTik RB3011UiAS-RM<br/>WAN: 192.168.7.59 | LAN: 192.168.88.1/24"]:::routingStyle
+    CISCO_A["Cisco ISR 4331 Site A<br/>LAN: 192.168.88.2 (DNAT TCP 2222)"]:::routingStyle
+    CISCO_B["Cisco ISR 4331 Site B<br/>(PSU Triage Standby)"]:::routingStyle
+    
+    subgraph CORTEX_NODE ["Cortex-01 Bare-Metal (Debian 12) | Intel i5-3230M / 12GB RAM"]
+        CORTEX["Cortex-01 Host<br/>192.168.7.29"]:::computeStyle
+        N8N["n8n Workflow Engine"]:::containerStyle
+        PG["PostgreSQL 16 Ledger"]:::containerStyle
+        ERP["FastAPI Mock ERP"]:::containerStyle
+        BROWSERLESS["Browserless RPA (Headless Chrome)"]:::containerStyle
+        CORTEX --- N8N
+        CORTEX --- PG
+        CORTEX --- ERP
+        CORTEX --- BROWSERLESS
+    end
+
+    CF["Cloudflare Zero Trust Ingress<br/>(Zero Open Inbound Ports)"]:::ingressStyle
 
     ONT --> LAPTOP
     ONT --> RB
     ONT --> CORTEX
     RB -->|ether2-ether10 Bridge| CISCO_A
-    CORTEX -->|Zero Open Ports| CF
+    RB -.->|Planned Trunk| CISCO_B
+    CORTEX -->|Secure Tunnel Outbound| CF

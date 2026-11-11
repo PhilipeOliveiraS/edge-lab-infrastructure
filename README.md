@@ -30,25 +30,55 @@ In enterprise environments, throwing infinite cloud budget at software architect
   <img src="assets/architecture/edge-lab-topology-official.png" alt="Edge Lab Official Architecture Blueprint" width="950" />
 </p>
 
-### Physical & Logical Topology Blueprint
+### Compute Node & Hyper-Automation Engine (Cortex-01 Bare-Metal)
+The compute backbone is hosted on a dedicated bare-metal Debian 12 minimal system optimized for continuous workloads:
+* **Processor Architecture:** Intel® Core™ i5-3230M (2 Cores / 4 Threads, 2.60 GHz base clock, scaling up to 3.20 GHz via Intel Turbo Boost).
+* **Intelligent Power & Frequency Governor:** Configured under Linux `intel_pstate` scaling governor to enforce radical energy efficiency: maintaining near-idle power consumption during quiescent periods, while scaling instantaneously to peak Turbo Boost clocks when handling concurrent webhook execution bursts or multi-step RPA sessions.
+* **Memory & Storage:** 12 GiB RAM, 120 GiB solid-state storage.
+* **Production Container Fabric (`factory_default`):**
+  * **n8n Community Edition:** Core orchestrator coordinating business logic and identity workflows.
+  * **PostgreSQL 16:** ACID relational ledger enforcing distributed singleton locking and concurrency boundaries.
+  * **FastAPI Microservice:** Mock ERP licensing simulator providing idempotent revocation endpoints.
+  * **Browserless RPA:** Headless Chromium automation engine for programmatic browser execution, synthetic interaction testing, and resilient web scraping.
+  * **Cloudflare Zero Trust Ingress:** Encrypted outbound tunnel eliminating the need for exposed inbound NAT ports.
 
-```text
-[ Residential WAN / Gateway (192.168.7.1/24) ]
-│
-├── [ Admin Workstation: Pop!_OS Laptop (192.168.7.58) ]
-│
-├── [ Core Router: MikroTik RB3011UiAS-RM (WAN: 192.168.7.59) ]
-│         │
-│         └── LAN Bridge: 192.168.88.1/24 (Ports ether2–ether10)
-│                   │
-│                   ├── [ Cisco ISR 4331 Site A (Gi0/0/1: 192.168.88.2) ]
-│                   │         (Restricted DNAT via RB3011: TCP 2222 -> Port 22)
-│                   │
-│                   └── [ Cisco ISR 4331 Site B (Hardware Triage Standby) ]
-│
-└── [ Compute Node: Cortex-01 Bare-Metal (Debian 12: 192.168.7.29) ]
-          │
-          └── Cloudflare Zero Trust Ingress (Zero Open Inbound Ports)
+### Physical & Logical Topology Blueprint (Mermaid Specification)
+
+```mermaid
+graph TD
+    classDef wanStyle fill:#0284C7,stroke:#0369A1,stroke-width:2px,color:#FFFFFF;
+    classDef adminStyle fill:#16A34A,stroke:#15803D,stroke-width:2px,color:#FFFFFF;
+    classDef routingStyle fill:#2563EB,stroke:#1D4ED8,stroke-width:2px,color:#FFFFFF;
+    classDef computeStyle fill:#7C3AED,stroke:#6D28D9,stroke-width:2px,color:#FFFFFF;
+    classDef containerStyle fill:#475569,stroke:#334155,stroke-width:1.5px,color:#FFFFFF;
+    classDef ingressStyle fill:#EA580C,stroke:#C2410C,stroke-width:2px,color:#FFFFFF;
+
+    ONT["Residential ONT Gateway<br/>192.168.7.1/24"]:::wanStyle
+    LAPTOP["Admin Workstation (Pop!_OS)<br/>192.168.7.58"]:::adminStyle
+    RB["MikroTik RB3011UiAS-RM<br/>WAN: 192.168.7.59 | LAN: 192.168.88.1/24"]:::routingStyle
+    CISCO_A["Cisco ISR 4331 Site A<br/>LAN: 192.168.88.2 (DNAT TCP 2222)"]:::routingStyle
+    CISCO_B["Cisco ISR 4331 Site B<br/>(PSU Triage Standby)"]:::routingStyle
+    
+    subgraph CORTEX_NODE ["Cortex-01 Bare-Metal (Debian 12) | Intel i5-3230M / 12GB RAM"]
+        CORTEX["Cortex-01 Host<br/>192.168.7.29"]:::computeStyle
+        N8N["n8n Workflow Engine"]:::containerStyle
+        PG["PostgreSQL 16 Ledger"]:::containerStyle
+        ERP["FastAPI Mock ERP"]:::containerStyle
+        BROWSERLESS["Browserless RPA (Headless Chrome)"]:::containerStyle
+        CORTEX --- N8N
+        CORTEX --- PG
+        CORTEX --- ERP
+        CORTEX --- BROWSERLESS
+    end
+
+    CF["Cloudflare Zero Trust Ingress<br/>(Zero Open Inbound Ports)"]:::ingressStyle
+
+    ONT --> LAPTOP
+    ONT --> RB
+    ONT --> CORTEX
+    RB -->|ether2-ether10 Bridge| CISCO_A
+    RB -.->|Planned Trunk| CISCO_B
+    CORTEX -->|Secure Tunnel Outbound| CF
 ```
 
 ---
@@ -59,7 +89,7 @@ This infrastructure provides demonstrable, verifiable evidence across multiple e
 
 | Engineering Domain | Real-World Operational Implementation in Edge Lab | Supported Portfolio Workloads |
 | :--- | :--- | :--- |
-| **Platform Engineering** | Bare-metal Linux host administration (Debian 12 minimal), unified Docker Compose topologies, resource quota containment (`mem_limit`), and container lifecycle automation. | [IAM-HR Platform](https://github.com/PhilipeOliveiraS/iam-hr-offboarding-platform) (Postgres 16, n8n, FastAPI ERP). |
+| **Platform Engineering** | Bare-metal Linux host administration (Debian 12 minimal), unified Docker Compose topologies, resource quota containment (`mem_limit`), and container lifecycle automation. | [IAM-HR Platform](https://github.com/PhilipeOliveiraS/iam-hr-offboarding-platform) (Postgres 16, n8n, FastAPI ERP, Browserless RPA). |
 | **NetDevOps & Edge Networking** | RouterOS 7.23.7 long-term automation, VLAN/bridge segmentation, strict stateful firewall input chains, and Cisco IOS-XE 16.6.4 modular edge routing. | Future **OpsCore** physical telemetry aggregator & physical network enforcement. |
 | **Zero Trust & DevSecOps** | Elimination of public perimeter exposure via Cloudflare Zero Trust Tunnels, out-of-band management restrictions (ACLs limiting VTY/SSH strictly to admin host `192.168.7.58`), and cryptographic hygiene. | End-to-end identity revocation and credential quarantine. |
 | **Cloud FinOps & Capacity Planning** | Measuring true cost-of-compute by comparing local bare-metal performance baselines against variable cloud IaaS/PaaS pricing (NAT Gateways, egress traffic, managed container runtimes). | High-efficiency microservice deployments and synthetic workload simulation. |

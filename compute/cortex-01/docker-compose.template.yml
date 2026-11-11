@@ -29,6 +29,20 @@ services:
     environment:
       PORT: 8000
 
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    container_name: factory-browserless
+    restart: unless-stopped
+    networks:
+      - factory_default
+    environment:
+      - MAX_CONCURRENT_SESSIONS=5
+      - CONNECTION_TIMEOUT=60000
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
   n8n:
     image: docker.n8n.io/n8nio/n8n:2.39.6
     container_name: factory-n8n
